@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/fxmb/go-server/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -16,14 +17,19 @@ func main() {
 	l := log.New(os.Stdout, "products-api ", log.LstdFlags)
 
 	// create the handlers
-	//productHandler := handlers.NewProducts(l)
+	productHandler := handlers.NewProducts(l)
 
 	// create a new serve mux and register the handlers
 	sm := mux.NewRouter()
 
-	getRouter := sm.Methods("GET").Subrouter()
-	getRouter.HandleFunc("/")
+	getRouter := sm.Methods(http.MethodGet).Subrouter()
+	getRouter.HandleFunc("/", productHandler.GetProducts)
 
+	putRouter := sm.Methods(http.MethodPut).Subrouter()
+	putRouter.HandleFunc("/{id:[0-9]+}", productHandler.UpdateProducts)
+
+	postRouter := sm.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/", productHandler.AddProduct)
 	// create a new server
 	s := http.Server{
 		Addr:         ":9090",           // configure the bind address
